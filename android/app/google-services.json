@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "19582274663",
+    "project_id": "streamdash-b5145",
+    "storage_bucket": "streamdash-b5145.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:19582274663:android:6f8b86fee32d05163f18c2",
+        "android_client_info": {
+          "package_name": "com.tisserak.streamdash"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "19582274663-f0ejfpfcob0q6ujv418nvdvj3erd5cc3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiXz8O7aFZVzfNHbHXGi40OxyFT7lWsPM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "19582274663-f0ejfpfcob0q6ujv418nvdvj3erd5cc3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "19582274663-ruvgradjb7cu0ia9fkl4qjq4kvdeqhj0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.tisserak.streamdash",
+                "app_store_id": "1625847324"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
