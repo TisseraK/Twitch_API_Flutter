@@ -47,46 +47,8 @@ class DashboardState extends State<Dashboard> {
         'Authorization': 'Bearer $bearerID',
         'Client-Id': '$clientID',
       });
-
-      follower = json.decode(follower.body);
-      sub = await http.get(Uri.parse(
-              //'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
-              'https://api.twitch.tv/helix/subscriptions?broadcaster_id=$id&first=1'),
-          headers: {
-            'Authorization': 'Bearer $bearerID',
-            'Client-Id': '$clientID',
-          });
-
-      sub = json.decode(sub.body);
-      /*if (sub['total'] > nsub) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('NEW SUBSCRIBERs !'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [Text("Name : ${sub['data'][0]['user_name']} ")],
-              ),
-              actions: <Widget>[
-                FlatButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  textColor: Theme.of(context).primaryColor,
-                  child: const Text('Close'),
-                ),
-              ],
-            );
-          },
-        );
-      }*/
-
-      if (timerC == 1) {
-        timer.cancel();
-      }
-      /*if (follower['total'] > nfollower) {
+      follower = await json.decode(follower.body);
+      if (follower['total'] > nfollower) {
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -98,21 +60,62 @@ class DashboardState extends State<Dashboard> {
                 children: [Text("Name : ${follower['data'][0]['from_name']} ")],
               ),
               actions: <Widget>[
-                FlatButton(
+                TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  textColor: Theme.of(context).primaryColor,
                   child: const Text('Close'),
                 ),
               ],
             );
           },
         );
-      }*/
+      }
+
+      sub = await http.get(Uri.parse(
+              //'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
+              'https://api.twitch.tv/helix/subscriptions?broadcaster_id=$id&first=1'),
+          headers: {
+            'Authorization': 'Bearer $bearerID',
+            'Client-Id': '$clientID',
+          });
+
+      sub = await json.decode(sub.body);
+      if (sub['total'] > nsub) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('NEW SUBSCRIBERs !'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [Text("Name : ${sub['data'][0]['user_name']} ")],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                    'Close',
+                    style: TextStyle(color: Theme.of(context).primaryColor),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      }
+
+      if (timerC == 1) {
+        timer.cancel();
+      }
       print('3');
       setState(() {
         stream = json.decode(stream.body);
+        nfollower = follower['total'];
+        nsub = sub['total'];
       });
     });
     super.initState();
@@ -121,6 +124,7 @@ class DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
+    print(ez['data'][0]['user_login']);
     timerC = 0;
     if (stream['data'].toString() == '[]') {
       print('1');
@@ -151,7 +155,7 @@ class DashboardState extends State<Dashboard> {
             decoration: BoxDecoration(color: Colors.black),
             child: ListView(children: [
               Container(
-                  padding: EdgeInsets.fromLTRB(64, 16, 64, 16),
+                  padding: EdgeInsets.all(16),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -163,7 +167,7 @@ class DashboardState extends State<Dashboard> {
                             fontSize:
                                 MediaQuery.of(context).size.height * 0.02),
                       ),
-                      Padding(padding: EdgeInsets.all(10)),
+                      Padding(padding: EdgeInsets.all(2.5)),
                       Container(
                         decoration: BoxDecoration(
                             color: Colors.purple,
@@ -180,7 +184,6 @@ class DashboardState extends State<Dashboard> {
                       )
                     ],
                   )),
-              Padding(padding: EdgeInsets.all(10)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -197,7 +200,7 @@ class DashboardState extends State<Dashboard> {
                                 fontSize:
                                     MediaQuery.of(context).size.height * 0.02),
                           ),
-                          Padding(padding: EdgeInsets.all(10)),
+                          Padding(padding: EdgeInsets.all(2.5)),
                           Container(
                             decoration: BoxDecoration(
                                 color: Colors.purple,
@@ -214,7 +217,7 @@ class DashboardState extends State<Dashboard> {
                           )
                         ],
                       )),
-                  Padding(padding: EdgeInsets.all(10)),
+                  Padding(padding: EdgeInsets.all(2.5)),
                   Container(
                       padding: EdgeInsets.fromLTRB(32, 16, 32, 16),
                       child: Column(
@@ -228,7 +231,7 @@ class DashboardState extends State<Dashboard> {
                                 fontSize:
                                     MediaQuery.of(context).size.height * 0.02),
                           ),
-                          Padding(padding: EdgeInsets.all(10)),
+                          Padding(padding: EdgeInsets.all(2.5)),
                           Container(
                             decoration: BoxDecoration(
                                 color: Colors.purple,
@@ -277,8 +280,12 @@ class DashboardState extends State<Dashboard> {
               Container(
                 height: MediaQuery.of(context).size.height * 0.5,
                 width: MediaQuery.of(context).size.width,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                child: GridView.count(
+                  primary: false,
+                  padding: const EdgeInsets.all(10),
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  crossAxisCount: 3,
                   children: [
                     GestureDetector(
                       onTap: () async {
@@ -308,23 +315,20 @@ class DashboardState extends State<Dashboard> {
                         }
                       },
                       child: Container(
-                          padding: EdgeInsets.fromLTRB(64, 16, 64, 16),
+                          padding: EdgeInsets.all(10),
                           decoration: BoxDecoration(
                               color: Colors.purple,
                               borderRadius: BorderRadius.circular(30)),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Text(
-                                'Create Stream Marker',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize:
-                                        MediaQuery.of(context).size.height *
-                                            0.02),
-                              ),
-                            ],
+                          child: Center(
+                            child: Text(
+                              'Create Stream Marker',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: MediaQuery.of(context).size.height *
+                                      0.02),
+                            ),
                           )),
                     ),
                     GestureDetector(
@@ -355,7 +359,7 @@ class DashboardState extends State<Dashboard> {
                         }
                       },
                       child: Container(
-                          padding: EdgeInsets.fromLTRB(64, 16, 64, 16),
+                          padding: EdgeInsets.all(10),
                           decoration: BoxDecoration(
                               color: Colors.purple,
                               borderRadius: BorderRadius.circular(30)),
@@ -364,6 +368,7 @@ class DashboardState extends State<Dashboard> {
                             children: [
                               Text(
                                 'Create Clip',
+                                textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
@@ -402,7 +407,7 @@ class DashboardState extends State<Dashboard> {
                         }
                       },
                       child: Container(
-                          padding: EdgeInsets.fromLTRB(64, 16, 64, 16),
+                          padding: EdgeInsets.all(10),
                           decoration: BoxDecoration(
                               color: Colors.purple,
                               borderRadius: BorderRadius.circular(30)),
@@ -411,6 +416,7 @@ class DashboardState extends State<Dashboard> {
                             children: [
                               Text(
                                 'Ads 30 secondes',
+                                textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
@@ -449,7 +455,7 @@ class DashboardState extends State<Dashboard> {
                         }
                       },
                       child: Container(
-                          padding: EdgeInsets.fromLTRB(64, 16, 64, 16),
+                          padding: EdgeInsets.all(10),
                           decoration: BoxDecoration(
                               color: Colors.purple,
                               borderRadius: BorderRadius.circular(30)),
@@ -458,6 +464,7 @@ class DashboardState extends State<Dashboard> {
                             children: [
                               Text(
                                 'Ads 60 secondes',
+                                textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
@@ -496,7 +503,7 @@ class DashboardState extends State<Dashboard> {
                         }
                       },
                       child: Container(
-                          padding: EdgeInsets.fromLTRB(64, 16, 64, 16),
+                          padding: EdgeInsets.all(10),
                           decoration: BoxDecoration(
                               color: Colors.purple,
                               borderRadius: BorderRadius.circular(30)),
@@ -505,6 +512,7 @@ class DashboardState extends State<Dashboard> {
                             children: [
                               Text(
                                 'Ads 90 secondes',
+                                textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
@@ -549,6 +557,23 @@ class DashboardState extends State<Dashboard> {
               width: MediaQuery.of(context).size.width,
               decoration: BoxDecoration(color: Colors.black),
               child: ListView(children: [
+                Container(
+                  height: MediaQuery.of(context).size.height * 0.25,
+                  width: MediaQuery.of(context).size.width * 0.95,
+                  child: InAppWebView(
+                    initialUrlRequest: URLRequest(
+                      url: Uri.parse(
+                        ("https://player.twitch.tv/?channel=${ez['data'][0]['user_login']}&parent=www.tisserak.fr"),
+                      ),
+                    ),
+                    androidOnPermissionRequest:
+                        (controller, origin, resources) async {
+                      return PermissionRequestResponse(
+                          resources: resources,
+                          action: PermissionRequestResponseAction.GRANT);
+                    },
+                  ),
+                ),
                 Container(
                     padding: EdgeInsets.fromLTRB(64, 16, 64, 16),
                     child: Column(
@@ -666,8 +691,12 @@ class DashboardState extends State<Dashboard> {
                 Container(
                   height: MediaQuery.of(context).size.height * 0.5,
                   width: MediaQuery.of(context).size.width,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  child: GridView.count(
+                    primary: false,
+                    padding: const EdgeInsets.all(10),
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    crossAxisCount: 3,
                     children: [
                       GestureDetector(
                         onTap: () async {
@@ -688,7 +717,7 @@ class DashboardState extends State<Dashboard> {
                           print(marker.toString());
                           if (marker['error'] != null) {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text('${marker['message']['message']}'),
+                              content: Text('${marker['message']}'),
                             ));
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -697,23 +726,21 @@ class DashboardState extends State<Dashboard> {
                           }
                         },
                         child: Container(
-                            padding: EdgeInsets.fromLTRB(64, 16, 64, 16),
+                            padding: EdgeInsets.all(10),
                             decoration: BoxDecoration(
                                 color: Colors.purple,
                                 borderRadius: BorderRadius.circular(30)),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                Text(
-                                  'Create Stream Marker',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize:
-                                          MediaQuery.of(context).size.height *
-                                              0.02),
-                                ),
-                              ],
+                            child: Center(
+                              child: Text(
+                                'Create Stream Marker',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize:
+                                        MediaQuery.of(context).size.height *
+                                            0.02),
+                              ),
                             )),
                       ),
                       GestureDetector(
@@ -744,7 +771,7 @@ class DashboardState extends State<Dashboard> {
                           }
                         },
                         child: Container(
-                            padding: EdgeInsets.fromLTRB(64, 16, 64, 16),
+                            padding: EdgeInsets.all(10),
                             decoration: BoxDecoration(
                                 color: Colors.purple,
                                 borderRadius: BorderRadius.circular(30)),
@@ -753,6 +780,7 @@ class DashboardState extends State<Dashboard> {
                               children: [
                                 Text(
                                   'Create Clip',
+                                  textAlign: TextAlign.center,
                                   style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
@@ -791,7 +819,7 @@ class DashboardState extends State<Dashboard> {
                           }
                         },
                         child: Container(
-                            padding: EdgeInsets.fromLTRB(64, 16, 64, 16),
+                            padding: EdgeInsets.all(10),
                             decoration: BoxDecoration(
                                 color: Colors.purple,
                                 borderRadius: BorderRadius.circular(30)),
@@ -800,6 +828,7 @@ class DashboardState extends State<Dashboard> {
                               children: [
                                 Text(
                                   'Ads 30 secondes',
+                                  textAlign: TextAlign.center,
                                   style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
@@ -838,7 +867,7 @@ class DashboardState extends State<Dashboard> {
                           }
                         },
                         child: Container(
-                            padding: EdgeInsets.fromLTRB(64, 16, 64, 16),
+                            padding: EdgeInsets.all(10),
                             decoration: BoxDecoration(
                                 color: Colors.purple,
                                 borderRadius: BorderRadius.circular(30)),
@@ -847,6 +876,7 @@ class DashboardState extends State<Dashboard> {
                               children: [
                                 Text(
                                   'Ads 60 secondes',
+                                  textAlign: TextAlign.center,
                                   style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
@@ -885,7 +915,7 @@ class DashboardState extends State<Dashboard> {
                           }
                         },
                         child: Container(
-                            padding: EdgeInsets.fromLTRB(64, 16, 64, 16),
+                            padding: EdgeInsets.all(10),
                             decoration: BoxDecoration(
                                 color: Colors.purple,
                                 borderRadius: BorderRadius.circular(30)),
@@ -894,6 +924,7 @@ class DashboardState extends State<Dashboard> {
                               children: [
                                 Text(
                                   'Ads 90 secondes',
+                                  textAlign: TextAlign.center,
                                   style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
@@ -1056,10 +1087,14 @@ class DashboardState extends State<Dashboard> {
                   ),
                 ),*/
                 Container(
-                  height: MediaQuery.of(context).size.height,
+                  height: MediaQuery.of(context).size.height * 0.5,
                   width: MediaQuery.of(context).size.width,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  child: GridView.count(
+                    primary: false,
+                    padding: const EdgeInsets.all(10),
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    crossAxisCount: 3,
                     children: [
                       GestureDetector(
                         onTap: () async {
@@ -1080,7 +1115,7 @@ class DashboardState extends State<Dashboard> {
                           print(marker.toString());
                           if (marker['error'] != null) {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text('${marker['message']['message']}'),
+                              content: Text('${marker['message']}'),
                             ));
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -1089,23 +1124,21 @@ class DashboardState extends State<Dashboard> {
                           }
                         },
                         child: Container(
-                            padding: EdgeInsets.fromLTRB(64, 16, 64, 16),
+                            padding: EdgeInsets.all(10),
                             decoration: BoxDecoration(
                                 color: Colors.purple,
                                 borderRadius: BorderRadius.circular(30)),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                Text(
-                                  'Create Stream Marker',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize:
-                                          MediaQuery.of(context).size.height *
-                                              0.02),
-                                ),
-                              ],
+                            child: Center(
+                              child: Text(
+                                'Create Stream Marker',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize:
+                                        MediaQuery.of(context).size.height *
+                                            0.02),
+                              ),
                             )),
                       ),
                       GestureDetector(
@@ -1136,7 +1169,7 @@ class DashboardState extends State<Dashboard> {
                           }
                         },
                         child: Container(
-                            padding: EdgeInsets.fromLTRB(64, 16, 64, 16),
+                            padding: EdgeInsets.all(10),
                             decoration: BoxDecoration(
                                 color: Colors.purple,
                                 borderRadius: BorderRadius.circular(30)),
@@ -1145,6 +1178,7 @@ class DashboardState extends State<Dashboard> {
                               children: [
                                 Text(
                                   'Create Clip',
+                                  textAlign: TextAlign.center,
                                   style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
@@ -1155,114 +1189,102 @@ class DashboardState extends State<Dashboard> {
                               ],
                             )),
                       ),
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            GestureDetector(
-                              onTap: () async {
-                                var marker;
-                                marker = await http.post(Uri.parse(
-                                        //'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
-                                        'https://api.twitch.tv/helix/channels/commercial'),
-                                    headers: {
-                                      'Authorization': 'Bearer $bearerID',
-                                      'Client-Id': '$clientID',
-                                    },
-                                    body: {
-                                      'broadcaster_id': id,
-                                      'length': '30'
-                                    });
-
-                                marker = json.decode(marker.body);
-                                print(marker.toString());
-                                if (marker['error'] != null) {
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(SnackBar(
-                                    content: Text('${marker['message']}'),
-                                  ));
-                                } else {
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(SnackBar(
-                                    content:
-                                        const Text('30 secondes ADS launch'),
-                                  ));
-                                }
+                      GestureDetector(
+                        onTap: () async {
+                          var marker;
+                          marker = await http.post(Uri.parse(
+                                  //'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
+                                  'https://api.twitch.tv/helix/channels/commercial'),
+                              headers: {
+                                'Authorization': 'Bearer $bearerID',
+                                'Client-Id': '$clientID',
                               },
-                              child: Container(
-                                  padding: EdgeInsets.fromLTRB(64, 16, 64, 16),
-                                  decoration: BoxDecoration(
-                                      color: Colors.purple,
-                                      borderRadius: BorderRadius.circular(30)),
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: [
-                                      Text(
-                                        'Ads 30 secondes',
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.02),
-                                      ),
-                                    ],
-                                  )),
-                            ),
-                            GestureDetector(
-                              onTap: () async {
-                                var marker;
-                                marker = await http.post(Uri.parse(
-                                        //'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
-                                        'https://api.twitch.tv/helix/channels/commercial'),
-                                    headers: {
-                                      'Authorization': 'Bearer $bearerID',
-                                      'Client-Id': '$clientID',
-                                    },
-                                    body: {
-                                      'broadcaster_id': id,
-                                      'length': '60'
-                                    });
+                              body: {
+                                'broadcaster_id': id,
+                                'length': '30'
+                              });
 
-                                marker = json.decode(marker.body);
-                                print(marker.toString());
-                                if (marker['error'] != null) {
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(SnackBar(
-                                    content: Text('${marker['message']}'),
-                                  ));
-                                } else {
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(SnackBar(
-                                    content:
-                                        const Text('60 secondes ADS launch'),
-                                  ));
-                                }
+                          marker = json.decode(marker.body);
+                          print(marker.toString());
+                          if (marker['error'] != null) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text('${marker['message']}'),
+                            ));
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: const Text('30 secondes ADS launch'),
+                            ));
+                          }
+                        },
+                        child: Container(
+                            padding: EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                                color: Colors.purple,
+                                borderRadius: BorderRadius.circular(30)),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                Text(
+                                  'Ads 30 secondes',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize:
+                                          MediaQuery.of(context).size.height *
+                                              0.02),
+                                ),
+                              ],
+                            )),
+                      ),
+                      GestureDetector(
+                        onTap: () async {
+                          var marker;
+                          marker = await http.post(Uri.parse(
+                                  //'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
+                                  'https://api.twitch.tv/helix/channels/commercial'),
+                              headers: {
+                                'Authorization': 'Bearer $bearerID',
+                                'Client-Id': '$clientID',
                               },
-                              child: Container(
-                                  padding: EdgeInsets.fromLTRB(64, 16, 64, 16),
-                                  decoration: BoxDecoration(
-                                      color: Colors.purple,
-                                      borderRadius: BorderRadius.circular(30)),
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: [
-                                      Text(
-                                        'Ads 60 secondes',
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.02),
-                                      ),
-                                    ],
-                                  )),
-                            ),
-                          ]),
+                              body: {
+                                'broadcaster_id': id,
+                                'length': '60'
+                              });
+
+                          marker = json.decode(marker.body);
+                          print(marker.toString());
+                          if (marker['error'] != null) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text('${marker['message']}'),
+                            ));
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: const Text('60 secondes ADS launch'),
+                            ));
+                          }
+                        },
+                        child: Container(
+                            padding: EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                                color: Colors.purple,
+                                borderRadius: BorderRadius.circular(30)),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                Text(
+                                  'Ads 60 secondes',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize:
+                                          MediaQuery.of(context).size.height *
+                                              0.02),
+                                ),
+                              ],
+                            )),
+                      ),
                       GestureDetector(
                         onTap: () async {
                           var marker;
@@ -1291,7 +1313,7 @@ class DashboardState extends State<Dashboard> {
                           }
                         },
                         child: Container(
-                            padding: EdgeInsets.fromLTRB(64, 16, 64, 16),
+                            padding: EdgeInsets.all(10),
                             decoration: BoxDecoration(
                                 color: Colors.purple,
                                 borderRadius: BorderRadius.circular(30)),
@@ -1300,6 +1322,7 @@ class DashboardState extends State<Dashboard> {
                               children: [
                                 Text(
                                   'Ads 90 secondes',
+                                  textAlign: TextAlign.center,
                                   style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,

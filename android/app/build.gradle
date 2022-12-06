@@ -34,7 +34,7 @@ apply plugin: 'com.google.gms.google-services'
 
   android {
               
-    compileSdkVersion 32
+    compileSdkVersion 33
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -53,8 +53,8 @@ apply plugin: 'com.google.gms.google-services'
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.tisserak.streamdash"
         minSdkVersion 21
-        targetSdkVersion 31
-        versionCode 21
+        targetSdkVersion 33
+        versionCode 22
         versionName "1.0.1"
     }
     packagingOptions {

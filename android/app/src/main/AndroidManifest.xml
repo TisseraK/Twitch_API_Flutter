@@ -4,9 +4,7 @@
         android:label="StreamDash"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
-         <meta-data
-                android:name="com.google.android.gms.ads.APPLICATION_ID"
-                android:value="ca-app-pub-1339571617226067~2761342169"/>
+        
         <activity
             android:name=".MainActivity"
             android:exported="true"
