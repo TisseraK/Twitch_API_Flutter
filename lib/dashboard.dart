@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 //import 'package:admob_flutter/admob_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:StreamDash/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'package:http/http.dart' as http;
 
@@ -122,8 +124,41 @@ class DashboardState extends State<Dashboard> {
     //bannerSize = AdmobBannerSize.BANNER;
   }
 
+  final BannerAd myBanner = BannerAd(
+    adUnitId: Platform.isAndroid
+        ? 'ca-app-pub-4220221705377808/8895675793'
+        : 'ca-app-pub-4220221705377808/8829099328',
+    size: AdSize.banner,
+    request: AdRequest(),
+    listener: BannerAdListener(),
+  );
+  final AdSize adSize = AdSize(width: 300, height: 50);
+  final BannerAdListener listener = BannerAdListener(
+    // Called when an ad is successfully received.
+    onAdLoaded: (Ad ad) => print('Ad loaded.'),
+    // Called when an ad request failed.
+    onAdFailedToLoad: (Ad ad, LoadAdError error) {
+      // Dispose the ad here to free resources.
+      ad.dispose();
+      print('Ad failed to load: $error');
+    },
+    // Called when an ad opens an overlay that covers the screen.
+    onAdOpened: (Ad ad) => print('Ad opened.'),
+    // Called when an ad removes an overlay that covers the screen.
+    onAdClosed: (Ad ad) => print('Ad closed.'),
+    // Called when an impression occurs on the ad.
+    onAdImpression: (Ad ad) => print('Ad impression.'),
+  );
   @override
   Widget build(BuildContext context) {
+    myBanner.load();
+    final AdWidget adWidget = AdWidget(ad: myBanner);
+    final Container adContainer = Container(
+      alignment: Alignment.center,
+      child: adWidget,
+      width: myBanner.size.width.toDouble(),
+      height: myBanner.size.height.toDouble(),
+    );
     print(ez['data'][0]['user_login']);
     timerC = 0;
     if (stream['data'].toString() == '[]') {
@@ -154,6 +189,7 @@ class DashboardState extends State<Dashboard> {
             width: MediaQuery.of(context).size.width,
             decoration: BoxDecoration(color: Colors.black),
             child: ListView(children: [
+              adContainer,
               Container(
                   padding: EdgeInsets.all(16),
                   child: Column(
@@ -557,6 +593,7 @@ class DashboardState extends State<Dashboard> {
               width: MediaQuery.of(context).size.width,
               decoration: BoxDecoration(color: Colors.black),
               child: ListView(children: [
+                adContainer,
                 Container(
                   height: MediaQuery.of(context).size.height * 0.25,
                   width: MediaQuery.of(context).size.width * 0.95,
@@ -967,6 +1004,7 @@ class DashboardState extends State<Dashboard> {
               width: MediaQuery.of(context).size.width,
               decoration: BoxDecoration(color: Colors.black),
               child: ListView(children: [
+                adContainer,
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [

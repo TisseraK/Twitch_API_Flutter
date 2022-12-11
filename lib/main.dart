@@ -9,6 +9,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
 import 'package:StreamDash/dashboard.dart';
 //import 'package:admob_flutter/admob_flutter.dart';
@@ -17,6 +18,7 @@ var bdd;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Initialize without device test ids.
+  await MobileAds.instance.initialize();
   await Firebase.initializeApp();
   //await Admob.requestTrackingAuthorization();
 
@@ -249,7 +251,7 @@ class TwitchState extends State<Twitch> {
       child: InAppWebView(
         initialUrlRequest: URLRequest(
           url: Uri.parse(
-              ('https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=$clientID&redirect_uri=https://tisserak.fr&scope=channel%3Amanage%3Apolls+channel%3Aread%3Apolls+channel%3Aread%3Asubscriptions+channel%3Aedit%3Acommercial+clips%3Aedit+channel%3Amanage%3Abroadcast')),
+              ('https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=$clientID&redirect_uri=https://tisserak.fr&scope=channel%3Amanage%3Apolls+channel%3Aread%3Apolls+channel%3Aread%3Asubscriptions+channel%3Aedit%3Acommercial+clips%3Aedit+channel%3Amanage%3Abroadcast+moderator%3Amanage%3Achat_settings')),
         ),
         androidOnPermissionRequest: (controller, origin, resources) async {
           return PermissionRequestResponse(

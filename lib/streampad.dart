@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
 //import 'package:admob_flutter/admob_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:StreamDash/constant.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'package:http/http.dart' as http;
 
@@ -26,6 +28,31 @@ class StreamPadState extends State<StreamPad> {
   ///AdmobBannerSize bannerSize;
   //AdmobInterstitial interstitialAd;
   //AdmobReward rewardAd;
+  final BannerAd myBanner = BannerAd(
+    adUnitId: Platform.isAndroid
+        ? 'ca-app-pub-4220221705377808/8895675793'
+        : 'ca-app-pub-4220221705377808/8829099328',
+    size: AdSize.banner,
+    request: AdRequest(),
+    listener: BannerAdListener(),
+  );
+  final AdSize adSize = AdSize(width: 300, height: 50);
+  final BannerAdListener listener = BannerAdListener(
+    // Called when an ad is successfully received.
+    onAdLoaded: (Ad ad) => print('Ad loaded.'),
+    // Called when an ad request failed.
+    onAdFailedToLoad: (Ad ad, LoadAdError error) {
+      // Dispose the ad here to free resources.
+      ad.dispose();
+      print('Ad failed to load: $error');
+    },
+    // Called when an ad opens an overlay that covers the screen.
+    onAdOpened: (Ad ad) => print('Ad opened.'),
+    // Called when an ad removes an overlay that covers the screen.
+    onAdClosed: (Ad ad) => print('Ad closed.'),
+    // Called when an impression occurs on the ad.
+    onAdImpression: (Ad ad) => print('Ad impression.'),
+  );
 
   @override
   void initState() {
@@ -126,6 +153,14 @@ class StreamPadState extends State<StreamPad> {
   @override
   Widget build(BuildContext context) {
     timerC = 0;
+    myBanner.load();
+    final AdWidget adWidget = AdWidget(ad: myBanner);
+    final Container adContainer = Container(
+      alignment: Alignment.center,
+      child: adWidget,
+      width: myBanner.size.width.toDouble(),
+      height: myBanner.size.height.toDouble(),
+    );
 
     print('1');
     if (stream['data'].toString() == '[]') {
@@ -261,6 +296,7 @@ class StreamPadState extends State<StreamPad> {
                   listener: (AdmobAdEvent event, Map<String, dynamic> args) {},
                 ),
               ),*/
+              adContainer,
               Padding(padding: EdgeInsets.all(10)),
               Container(
                 height: MediaQuery.of(context).size.height * 0.5,
@@ -651,7 +687,8 @@ class StreamPadState extends State<StreamPad> {
                         (AdmobAdEvent event, Map<String, dynamic> args) {},
                   ),
                 ),*/
-                //Padding(padding: EdgeInsets.all(10)),
+                adContainer,
+                Padding(padding: EdgeInsets.all(10)),
                 Container(
                   height: MediaQuery.of(context).size.height * 0.5,
                   width: MediaQuery.of(context).size.width,

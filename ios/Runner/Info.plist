@@ -30,6 +30,43 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-4220221705377808~1188576160</string>
+	<key>SKAdNetworkItems</key>
+  	<array>
+    <dict>
+      <key>SKAdNetworkIdentifier</key>
+      <string>cstr6suwn9.skadnetwork</string>
+    </dict>
+	<dict>
+      <key>SKAdNetworkIdentifier</key>
+      <string>4fzdc2evr5.skadnetwork</string>
+    </dict>
+    <dict>
+      <key>SKAdNetworkIdentifier</key>
+      <string>4pfyvq9l8r.skadnetwork </string>
+    </dict>
+    <dict>
+      <key>SKAdNetworkIdentifier</key>
+      <string>2fnua5tdw4.skadnetwork</string>
+    </dict>
+    <dict>
+      <key>SKAdNetworkIdentifier</key>
+      <string>ydx93a7ass.skadnetwork</string>
+    </dict>
+    <dict>
+      <key>SKAdNetworkIdentifier</key>
+      <string>5a6flpkh64.skadnetwork</string>
+    </dict>
+    <dict>
+      <key>SKAdNetworkIdentifier</key>
+      <string>p78axxw29g.skadnetwork</string>
+    </dict>
+    <dict>
+      <key>SKAdNetworkIdentifier</key>
+      <string>v72qych5uu.skadnetwork</string>
+    </dict>
+	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
