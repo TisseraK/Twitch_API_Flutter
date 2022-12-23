@@ -43,6 +43,7 @@ dependencies:
   cloud_firestore: ^4.0.4
   url_launcher: ^6.1.5
   google_mobile_ads: ^2.3.0
+  app_tracking_transparency: ^2.0.3
 
 dev_dependencies:
   flutter_test:

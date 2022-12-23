@@ -78,16 +78,20 @@ class SecondPageState extends State<SecondPage> {
     );
   }
 
-  final BannerAd myBanner = BannerAd(
+  BannerAd myBanner = BannerAd(
     adUnitId: Platform.isAndroid
         ? 'ca-app-pub-4220221705377808/8895675793'
         : 'ca-app-pub-4220221705377808/8829099328',
-    size: AdSize.banner,
-    request: AdRequest(),
+    size: AdSize.largeBanner,
+    request: const AdRequest(
+      keywords: <String>['foo', 'bar'],
+      contentUrl: 'http://foo.com/bar.html',
+      nonPersonalizedAds: true,
+    ),
     listener: BannerAdListener(),
   );
-  final AdSize adSize = AdSize(width: 300, height: 50);
-  final BannerAdListener listener = BannerAdListener(
+  AdSize adSize = const AdSize(width: 300, height: 100);
+  BannerAdListener listener = BannerAdListener(
     // Called when an ad is successfully received.
     onAdLoaded: (Ad ad) => print('Ad loaded.'),
     // Called when an ad request failed.
@@ -107,12 +111,12 @@ class SecondPageState extends State<SecondPage> {
   @override
   Widget build(BuildContext context) {
     myBanner.load();
-    final AdWidget adWidget = AdWidget(ad: myBanner);
-    final Container adContainer = Container(
+    AdWidget adWidget = AdWidget(ad: myBanner);
+    Container adContainer = Container(
       alignment: Alignment.center,
       child: adWidget,
-      width: myBanner.size.width.toDouble(),
-      height: myBanner.size.height.toDouble(),
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height * 0.1,
     );
     print(stream.toString());
     return Scaffold(
@@ -269,6 +273,7 @@ class SecondPageState extends State<SecondPage> {
                       )),
                 ),
                 adContainer,
+
                 /*Container(
                   height: MediaQuery.of(context).size.height * 0.1,
                   width: MediaQuery.of(context).size.width,

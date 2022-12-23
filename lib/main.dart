@@ -1,9 +1,11 @@
 import 'dart:convert';
+
 import 'dart:io';
 
 import 'package:StreamDash/accueil.dart';
 import 'package:StreamDash/constant.dart';
 import 'package:StreamDash/streampad.dart';
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +14,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
 import 'package:StreamDash/dashboard.dart';
+
 //import 'package:admob_flutter/admob_flutter.dart';
 
 var bdd;
@@ -19,6 +22,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Initialize without device test ids.
   await MobileAds.instance.initialize();
+
   await Firebase.initializeApp();
   //await Admob.requestTrackingAuthorization();
 
@@ -43,6 +47,10 @@ void main() async {
         },
       ));
     }
+  } else {
+    print('hehehehe');
+    final status = await AppTrackingTransparency.requestTrackingAuthorization();
+    print(status);
   }
   runApp(MyApp());
 }
@@ -121,7 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               GestureDetector(
-                onTap: () {
+                onTap: () async {
                   Navigator.pushNamed(context, '/twitch');
                 },
                 child: Container(
