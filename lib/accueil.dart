@@ -7,12 +7,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
 import 'package:StreamDash/dashboard.dart';
 //import 'package:admob_flutter/admob_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
+
+import 'adHelper.dart';
 
 class SecondPage extends StatefulWidget {
   const SecondPage({Key? key}) : super(key: key);
@@ -21,104 +21,43 @@ class SecondPage extends StatefulWidget {
   State<SecondPage> createState() => SecondPageState();
 }
 
+List<String> ids = ['bZlBn4oPYfc'];
+
 class SecondPageState extends State<SecondPage> {
   //AdmobBannerSize bannerSize;
   //AdmobInterstitial interstitialAd;
   //AdmobReward rewardAd;
-
+  BannerAd? _bannerAd;
   @override
   void initState() {
     super.initState();
-
-    // You should execute `Admob.requestTrackingAuthorization()` here before showing any ad.
-
-    //bannerSize = AdmobBannerSize.BANNER;
+    BannerAd(
+      adUnitId: AdHelper.bannerAdUnitId,
+      request: AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _bannerAd = ad as BannerAd;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          print('Failed to load a banner ad: ${err.message}');
+          ad.dispose();
+        },
+      ),
+    ).load();
   }
 
-  Widget _card(DocumentSnapshot document) {
-    Uri _url = Uri.parse('https://twitch.tv/${document['display_name']}');
-    Future<void> _launchUrl() async {
-      if (!await launchUrl(_url)) {
-        throw 'Could not launch $_url';
-      }
-    }
+  void dispose() {
+    // TODO: Dispose a BannerAd object
+    _bannerAd?.dispose();
 
-    print('1');
-    return GestureDetector(
-      child: Container(
-          margin: EdgeInsets.all(20),
-          height: MediaQuery.of(context).size.height * 0.1,
-          width: MediaQuery.of(context).size.width,
-          decoration: BoxDecoration(
-              color: Colors.purple, borderRadius: BorderRadius.circular(30)),
-          child: Row(
-            children: [
-              Container(
-                height: MediaQuery.of(context).size.height * 0.1,
-                width: MediaQuery.of(context).size.height * 0.1,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-                  image: DecorationImage(
-                    image: NetworkImage(document['img']),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              Padding(padding: EdgeInsets.all(5)),
-              Text(document['display_name'],
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: MediaQuery.of(context).size.height * 0.03)),
-            ],
-          )),
-      onTap: () async {
-        await _launchUrl();
-      },
-    );
+    super.dispose();
   }
-
-  BannerAd myBanner = BannerAd(
-    adUnitId: Platform.isAndroid
-        ? 'ca-app-pub-4220221705377808/8895675793'
-        : 'ca-app-pub-4220221705377808/8829099328',
-    size: AdSize.largeBanner,
-    request: const AdRequest(
-      keywords: <String>['foo', 'bar'],
-      contentUrl: 'http://foo.com/bar.html',
-      nonPersonalizedAds: true,
-    ),
-    listener: BannerAdListener(),
-  );
-  AdSize adSize = const AdSize(width: 300, height: 100);
-  BannerAdListener listener = BannerAdListener(
-    // Called when an ad is successfully received.
-    onAdLoaded: (Ad ad) => print('Ad loaded.'),
-    // Called when an ad request failed.
-    onAdFailedToLoad: (Ad ad, LoadAdError error) {
-      // Dispose the ad here to free resources.
-      ad.dispose();
-      print('Ad failed to load: $error');
-    },
-    // Called when an ad opens an overlay that covers the screen.
-    onAdOpened: (Ad ad) => print('Ad opened.'),
-    // Called when an ad removes an overlay that covers the screen.
-    onAdClosed: (Ad ad) => print('Ad closed.'),
-    // Called when an impression occurs on the ad.
-    onAdImpression: (Ad ad) => print('Ad impression.'),
-  );
 
   @override
   Widget build(BuildContext context) {
-    myBanner.load();
-    AdWidget adWidget = AdWidget(ad: myBanner);
-    Container adContainer = Container(
-      alignment: Alignment.center,
-      child: adWidget,
-      width: MediaQuery.of(context).size.width,
-      height: MediaQuery.of(context).size.height * 0.1,
-    );
-    print(stream.toString());
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -134,158 +73,367 @@ class SecondPageState extends State<SecondPage> {
           height: MediaQuery.of(context).size.height,
           width: MediaQuery.of(context).size.width,
           decoration: BoxDecoration(color: Colors.black),
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Text(
-                  'Welcome ' + bz['data'][0]['display_name'].toString(),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.height * 0.03,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold),
-                ),
-                Container(
-                    padding: EdgeInsets.all(15),
-                    margin: EdgeInsets.symmetric(
-                        horizontal: MediaQuery.of(context).size.width * 0.2,
-                        vertical: MediaQuery.of(context).size.height * 0.01),
-                    height: MediaQuery.of(context).size.height * 0.15,
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    decoration: BoxDecoration(
-                        color: Colors.grey.shade900,
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: Colors.white, width: 2)),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Text(
-                          'Follower : ',
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                              fontSize:
-                                  MediaQuery.of(context).size.height * 0.03,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          follower['total'].toString(),
-                          style: TextStyle(
-                              fontSize:
-                                  MediaQuery.of(context).size.height * 0.03,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    )),
-                Container(
-                    margin: EdgeInsets.symmetric(
-                        horizontal: MediaQuery.of(context).size.width * 0.2,
-                        vertical: MediaQuery.of(context).size.height * 0.01),
-                    height: MediaQuery.of(context).size.height * 0.15,
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    decoration: BoxDecoration(
-                        color: Colors.grey.shade900,
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: Colors.white, width: 2)),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Subscriber : ',
-                          style: TextStyle(
-                              fontSize:
-                                  MediaQuery.of(context).size.height * 0.03,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          sub['total'].toString(),
-                          style: TextStyle(
-                              fontSize:
-                                  MediaQuery.of(context).size.height * 0.03,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    )),
-                GestureDetector(
-                  onTap: () async {
-                    stream = await http.get(Uri.parse(
-                        //'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
-                        'https://api.twitch.tv/helix/streams'), headers: {
-                      'Authorization': 'Bearer $bearerID',
-                      'Client-Id': '$clientID',
-                    });
-
-                    stream = await json.decode(stream.body);
-
-                    Navigator.pushNamed(context, '/dashboard');
-                  },
-                  child: Container(
-                      padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
-                      margin: EdgeInsets.symmetric(
-                        horizontal: MediaQuery.of(context).size.width * 0.2,
+          child: ListView(
+            children: [
+              Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Padding(padding: EdgeInsets.all(25)),
+                    Text(
+                      'Bienvenue ' + bz['data'][0]['display_name'].toString(),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: MediaQuery.of(context).size.height * 0.03,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Padding(padding: EdgeInsets.all(25)),
+                    Container(
+                        padding: EdgeInsets.all(15),
+                        margin: EdgeInsets.symmetric(
+                            horizontal: MediaQuery.of(context).size.width * 0.2,
+                            vertical:
+                                MediaQuery.of(context).size.height * 0.01),
+                        height: MediaQuery.of(context).size.height * 0.15,
+                        width: MediaQuery.of(context).size.width * 0.8,
+                        decoration: BoxDecoration(
+                            color: Colors.grey.shade900,
+                            borderRadius: BorderRadius.circular(30),
+                            border: Border.all(color: Colors.white, width: 2)),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Text(
+                              'Follower : ',
+                              textAlign: TextAlign.left,
+                              style: TextStyle(
+                                  fontSize:
+                                      MediaQuery.of(context).size.height * 0.03,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              follower['total'].toString(),
+                              style: TextStyle(
+                                  fontSize:
+                                      MediaQuery.of(context).size.height * 0.03,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        )),
+                    Container(
+                        margin: EdgeInsets.symmetric(
+                            horizontal: MediaQuery.of(context).size.width * 0.2,
+                            vertical:
+                                MediaQuery.of(context).size.height * 0.01),
+                        height: MediaQuery.of(context).size.height * 0.15,
+                        width: MediaQuery.of(context).size.width * 0.8,
+                        decoration: BoxDecoration(
+                            color: Colors.grey.shade900,
+                            borderRadius: BorderRadius.circular(30),
+                            border: Border.all(color: Colors.white, width: 2)),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Subscriber : ',
+                              style: TextStyle(
+                                  fontSize:
+                                      MediaQuery.of(context).size.height * 0.03,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              sub['total'].toString(),
+                              style: TextStyle(
+                                  fontSize:
+                                      MediaQuery.of(context).size.height * 0.03,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        )),
+                    Container(
+                        margin: EdgeInsets.symmetric(
+                            horizontal: MediaQuery.of(context).size.width * 0.2,
+                            vertical:
+                                MediaQuery.of(context).size.height * 0.01),
+                        height: MediaQuery.of(context).size.height * 0.15,
+                        width: MediaQuery.of(context).size.width * 0.8,
+                        decoration: BoxDecoration(
+                            color: Colors.grey.shade900,
+                            borderRadius: BorderRadius.circular(30),
+                            border: Border.all(color: Colors.white, width: 2)),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Points : ',
+                              style: TextStyle(
+                                  fontSize:
+                                      MediaQuery.of(context).size.height * 0.03,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              pointsClient.toString(),
+                              style: TextStyle(
+                                  fontSize:
+                                      MediaQuery.of(context).size.height * 0.03,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        )),
+                    Padding(padding: EdgeInsets.all(5)),
+                    if (_bannerAd != null)
+                      AnimatedContainer(
+                        width: _bannerAd != null
+                            ? _bannerAd!.size.width.toDouble()
+                            : double.infinity,
+                        height: _bannerAd != null
+                            ? _bannerAd!.size.height.toDouble()
+                            : 0,
+                        duration: Duration(seconds: 2),
+                        child: AdWidget(ad: _bannerAd!),
                       ),
-                      decoration: BoxDecoration(
-                          color: Colors.purple,
-                          borderRadius: BorderRadius.circular(30)),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Dashboard',
-                            style: TextStyle(color: Colors.white),
+                    Padding(padding: EdgeInsets.all(5)),
+                    Container(
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      child: Text(
+                        'Découvre nos outils disponible !',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize:
+                                MediaQuery.of(context).size.height * 0.03),
+                      ),
+                    ),
+                    Padding(padding: EdgeInsets.all(15)),
+                    Container(
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      child: Text(
+                        'Un outil te permettant de gérer entierement ton stream !',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize:
+                                MediaQuery.of(context).size.height * 0.025),
+                      ),
+                    ),
+                    Padding(padding: EdgeInsets.all(15)),
+                    GestureDetector(
+                      onTap: () async {
+                        stream = await http.get(Uri.parse(
+                            //'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
+                            'https://api.twitch.tv/helix/streams'), headers: {
+                          'Authorization': 'Bearer $bearerID',
+                          'Client-Id': '$clientID',
+                        });
+
+                        stream = await json.decode(stream.body);
+
+                        Navigator.pushNamed(context, '/dashboard');
+                      },
+                      child: Container(
+                          padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
+                          margin: EdgeInsets.symmetric(
+                            horizontal: MediaQuery.of(context).size.width * 0.2,
                           ),
-                        ],
-                      )),
-                ),
-                GestureDetector(
-                  onTap: () async {
-                    id = bz['data'][0]['id'].toString();
-                    stream = await http.get(Uri.parse(
-                        //'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
-                        'https://api.twitch.tv/helix/streams'), headers: {
-                      'Authorization': 'Bearer $bearerID',
-                      'Client-Id': '$clientID',
-                    });
+                          decoration: BoxDecoration(
+                              color: Colors.purple,
+                              borderRadius: BorderRadius.circular(30)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Dashboard',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          )),
+                    ),
+                    Padding(padding: EdgeInsets.all(15)),
+                    Container(
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      child: Text(
+                        'Un outil minimaliste pour gérer ton stream !',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize:
+                                MediaQuery.of(context).size.height * 0.025),
+                      ),
+                    ),
+                    Padding(padding: EdgeInsets.all(15)),
+                    GestureDetector(
+                      onTap: () async {
+                        id = bz['data'][0]['id'].toString();
+                        stream = await http.get(Uri.parse(
+                            //'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
+                            'https://api.twitch.tv/helix/streams'), headers: {
+                          'Authorization': 'Bearer $bearerID',
+                          'Client-Id': '$clientID',
+                        });
 
-                    stream = await json.decode(stream.body);
+                        stream = await json.decode(stream.body);
 
-                    Navigator.pushNamed(context, '/streampad');
-                  },
-                  child: Container(
-                      margin: EdgeInsets.symmetric(
-                          horizontal: MediaQuery.of(context).size.width * 0.2,
-                          vertical: MediaQuery.of(context).size.height * 0.01),
-                      padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
-                      decoration: BoxDecoration(
-                          color: Colors.purple,
-                          borderRadius: BorderRadius.circular(30)),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Stream Pad',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ],
-                      )),
-                ),
-                adContainer,
-
-                /*Container(
-                  height: MediaQuery.of(context).size.height * 0.1,
-                  width: MediaQuery.of(context).size.width,
-                  margin: EdgeInsets.symmetric(vertical: 20.0),
-                  child: AdmobBanner(
-                    adUnitId: getBannerAdUnitId(),
-                    adSize: bannerSize,
-                    listener:
-                        (AdmobAdEvent event, Map<String, dynamic> args) {},
-                  ),
-                ),*/
-              ])),
+                        Navigator.pushNamed(context, '/streampad');
+                      },
+                      child: Container(
+                          margin: EdgeInsets.symmetric(
+                              horizontal:
+                                  MediaQuery.of(context).size.width * 0.2,
+                              vertical:
+                                  MediaQuery.of(context).size.height * 0.01),
+                          padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
+                          decoration: BoxDecoration(
+                              color: Colors.purple,
+                              borderRadius: BorderRadius.circular(30)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Stream Pad',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          )),
+                    ),
+                    Padding(padding: EdgeInsets.all(15)),
+                    /*Platform.isAndroid
+                        ? Container(
+                            width: MediaQuery.of(context).size.width * 0.9,
+                            child: Text(
+                              'Gagne des points avec la communauté et boost ton stream !',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: MediaQuery.of(context).size.height *
+                                      0.025),
+                            ),
+                          )
+                        : SizedBox(),
+                    Platform.isAndroid
+                        ? Padding(padding: EdgeInsets.all(15))
+                        : SizedBox(),
+                    Platform.isAndroid
+                        ? GestureDetector(
+                            onTap: () {
+                              Navigator.pushNamed(context, '/room');
+                            },
+                            child: Container(
+                                margin: EdgeInsets.symmetric(
+                                    horizontal:
+                                        MediaQuery.of(context).size.width * 0.2,
+                                    vertical:
+                                        MediaQuery.of(context).size.height *
+                                            0.01),
+                                padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
+                                decoration: BoxDecoration(
+                                    color: Colors.purple,
+                                    borderRadius: BorderRadius.circular(30)),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Twitch Rooms',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ],
+                                )),
+                          )
+                        : SizedBox(),
+                    Platform.isAndroid
+                        ? Padding(padding: EdgeInsets.all(15))
+                        : SizedBox(),*/
+                    Container(
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      child: Text(
+                        'Augmente ton nombre de vus YouTube avec la communauté !',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize:
+                                MediaQuery.of(context).size.height * 0.025),
+                      ),
+                    ),
+                    Padding(padding: EdgeInsets.all(15)),
+                    GestureDetector(
+                      onTap: () async {
+                        QuerySnapshot<Map<String, dynamic>> vidsID =
+                            await FirebaseFirestore.instance
+                                .collection('youtubeBoost')
+                                .where("Date", isGreaterThan: DateTime.now())
+                                .get();
+                        print(vidsID.docs[1]['id']);
+                        for (var i = 0; i < vidsID.docs.length; i++) {
+                          ids.add(vidsID.docs[i]['id']);
+                        }
+                        Navigator.pushNamed(context, '/YoutubeBoost');
+                      },
+                      child: Container(
+                          margin: EdgeInsets.symmetric(
+                              horizontal:
+                                  MediaQuery.of(context).size.width * 0.2,
+                              vertical:
+                                  MediaQuery.of(context).size.height * 0.01),
+                          padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
+                          decoration: BoxDecoration(
+                              color: Colors.purple,
+                              borderRadius: BorderRadius.circular(30)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Youtube Viewer',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          )),
+                    ),
+                    Padding(padding: EdgeInsets.all(15)),
+                    /*Container(
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      child: Text(
+                        'Deviens VIP et gagne encore plus de points !',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize:
+                                MediaQuery.of(context).size.height * 0.025),
+                      ),
+                    ),
+                    Padding(padding: EdgeInsets.all(15)),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, '/room');
+                      },
+                      child: Container(
+                          margin: EdgeInsets.symmetric(
+                              horizontal:
+                                  MediaQuery.of(context).size.width * 0.2,
+                              vertical:
+                                  MediaQuery.of(context).size.height * 0.01),
+                          padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
+                          decoration: BoxDecoration(
+                              color: Colors.purple,
+                              borderRadius: BorderRadius.circular(30)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'VIP',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          )),
+                    ),*/
+                  ])
+            ],
+          )),
     );
   }
 }

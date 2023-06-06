@@ -9,6 +9,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'package:http/http.dart' as http;
 
+import 'adHelper.dart';
 import 'main.dart';
 import 'dart:convert';
 
@@ -27,32 +28,10 @@ class StreamPad extends StatefulWidget {
 class StreamPadState extends State<StreamPad> {
   ///AdmobBannerSize bannerSize;
   //AdmobInterstitial interstitialAd;
-  //AdmobReward rewardAd;
-  final BannerAd myBanner = BannerAd(
-    adUnitId: Platform.isAndroid
-        ? 'ca-app-pub-4220221705377808/8895675793'
-        : 'ca-app-pub-4220221705377808/8829099328',
-    size: AdSize.banner,
-    request: AdRequest(),
-    listener: BannerAdListener(),
-  );
-  final AdSize adSize = AdSize(width: 300, height: 50);
-  final BannerAdListener listener = BannerAdListener(
-    // Called when an ad is successfully received.
-    onAdLoaded: (Ad ad) => print('Ad loaded.'),
-    // Called when an ad request failed.
-    onAdFailedToLoad: (Ad ad, LoadAdError error) {
-      // Dispose the ad here to free resources.
-      ad.dispose();
-      print('Ad failed to load: $error');
-    },
-    // Called when an ad opens an overlay that covers the screen.
-    onAdOpened: (Ad ad) => print('Ad opened.'),
-    // Called when an ad removes an overlay that covers the screen.
-    onAdClosed: (Ad ad) => print('Ad closed.'),
-    // Called when an impression occurs on the ad.
-    onAdImpression: (Ad ad) => print('Ad impression.'),
-  );
+
+  BannerAd? _bannerAd;
+
+  // TODO: Implement _loadRewardedAd()
 
   @override
   void initState() {
@@ -147,20 +126,34 @@ class StreamPadState extends State<StreamPad> {
       });
     });
     super.initState();
-    //bannerSize = AdmobBannerSize.BANNER;
+    BannerAd(
+      adUnitId: AdHelper.bannerAdUnitId,
+      request: AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _bannerAd = ad as BannerAd;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          print('Failed to load a banner ad: ${err.message}');
+          ad.dispose();
+        },
+      ),
+    ).load();
+  }
+
+  void dispose() {
+    // TODO: Dispose a BannerAd object
+    _bannerAd?.dispose();
+
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     timerC = 0;
-    myBanner.load();
-    final AdWidget adWidget = AdWidget(ad: myBanner);
-    final Container adContainer = Container(
-      alignment: Alignment.center,
-      child: adWidget,
-      width: myBanner.size.width.toDouble(),
-      height: myBanner.size.height.toDouble(),
-    );
 
     print('1');
     if (stream['data'].toString() == '[]') {
@@ -288,15 +281,16 @@ class StreamPadState extends State<StreamPad> {
                 ],
               ),
               Padding(padding: EdgeInsets.all(10)),
-              /*Container(
-                margin: EdgeInsets.symmetric(vertical: 20.0),
-                child: AdmobBanner(
-                  adUnitId: getBannerAdUnitId(),
-                  adSize: bannerSize,
-                  listener: (AdmobAdEvent event, Map<String, dynamic> args) {},
+              if (_bannerAd != null)
+                AnimatedContainer(
+                  width: _bannerAd != null
+                      ? _bannerAd!.size.width.toDouble()
+                      : double.infinity,
+                  height:
+                      _bannerAd != null ? _bannerAd!.size.height.toDouble() : 0,
+                  duration: Duration(seconds: 2),
+                  child: AdWidget(ad: _bannerAd!),
                 ),
-              ),*/
-              adContainer,
               Padding(padding: EdgeInsets.all(10)),
               Container(
                 height: MediaQuery.of(context).size.height * 0.5,
@@ -678,16 +672,17 @@ class StreamPadState extends State<StreamPad> {
                   ],
                 ),
                 Padding(padding: EdgeInsets.all(10)),
-                /*Container(
-                  margin: EdgeInsets.symmetric(vertical: 20.0),
-                  child: AdmobBanner(
-                    adUnitId: getBannerAdUnitId(),
-                    adSize: bannerSize,
-                    listener:
-                        (AdmobAdEvent event, Map<String, dynamic> args) {},
+                if (_bannerAd != null)
+                  AnimatedContainer(
+                    width: _bannerAd != null
+                        ? _bannerAd!.size.width.toDouble()
+                        : double.infinity,
+                    height: _bannerAd != null
+                        ? _bannerAd!.size.height.toDouble()
+                        : 0,
+                    duration: Duration(seconds: 2),
+                    child: AdWidget(ad: _bannerAd!),
                   ),
-                ),*/
-                adContainer,
                 Padding(padding: EdgeInsets.all(10)),
                 Container(
                   height: MediaQuery.of(context).size.height * 0.5,

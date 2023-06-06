@@ -9,13 +9,16 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:webview_flutter/webview_flutter.dart';
 
+import 'adHelper.dart';
 import 'main.dart';
 import 'dart:convert';
 
 int nfollower = follower['total'];
 int nsub = sub['total'];
 int timerC = 0;
+String namee = bz['data'][0]['login'].toString();
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -24,11 +27,24 @@ class Dashboard extends StatefulWidget {
   State<Dashboard> createState() => DashboardState();
 }
 
-class DashboardState extends State<Dashboard> {
-  // AdmobBannerSize bannerSize;
-  // AdmobInterstitial interstitialAd;
-  //AdmobReward rewardAd;
+WebViewController controller = WebViewController()
+  ..setJavaScriptMode(JavaScriptMode.unrestricted)
+  ..setBackgroundColor(const Color(0x00000000))
+  ..setNavigationDelegate(
+    NavigationDelegate(
+      onProgress: (int progress) {
+        // Update loading bar.
+      },
+      onPageStarted: (String url) {},
+      onPageFinished: (String url) {},
+      onWebResourceError: (WebResourceError error) {},
+    ),
+  )
+  ..loadRequest(Uri.parse(
+      'https://nightdev.com/hosted/obschat?theme=bttv_dark&channel=${bz['data'][0]['login']}&fade=false&bot_activity=true&prevent_clipping=false'));
 
+class DashboardState extends State<Dashboard> {
+  BannerAd? _bannerAd;
   @override
   void initState() {
     nfollower = follower['total'];
@@ -121,46 +137,36 @@ class DashboardState extends State<Dashboard> {
       });
     });
     super.initState();
-    //bannerSize = AdmobBannerSize.BANNER;
+    BannerAd(
+      adUnitId: AdHelper.bannerAdUnitId,
+      request: AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _bannerAd = ad as BannerAd;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          print('Failed to load a banner ad: ${err.message}');
+          ad.dispose();
+        },
+      ),
+    ).load();
   }
 
-  final BannerAd myBanner = BannerAd(
-    adUnitId: Platform.isAndroid
-        ? 'ca-app-pub-4220221705377808/8895675793'
-        : 'ca-app-pub-4220221705377808/8829099328',
-    size: AdSize.banner,
-    request: AdRequest(),
-    listener: BannerAdListener(),
-  );
-  final AdSize adSize = AdSize(width: 300, height: 50);
-  final BannerAdListener listener = BannerAdListener(
-    // Called when an ad is successfully received.
-    onAdLoaded: (Ad ad) => print('Ad loaded.'),
-    // Called when an ad request failed.
-    onAdFailedToLoad: (Ad ad, LoadAdError error) {
-      // Dispose the ad here to free resources.
-      ad.dispose();
-      print('Ad failed to load: $error');
-    },
-    // Called when an ad opens an overlay that covers the screen.
-    onAdOpened: (Ad ad) => print('Ad opened.'),
-    // Called when an ad removes an overlay that covers the screen.
-    onAdClosed: (Ad ad) => print('Ad closed.'),
-    // Called when an impression occurs on the ad.
-    onAdImpression: (Ad ad) => print('Ad impression.'),
-  );
+  void dispose() {
+    // TODO: Dispose a BannerAd object
+    _bannerAd?.dispose();
+
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    myBanner.load();
-    final AdWidget adWidget = AdWidget(ad: myBanner);
-    final Container adContainer = Container(
-      alignment: Alignment.center,
-      child: adWidget,
-      width: myBanner.size.width.toDouble(),
-      height: myBanner.size.height.toDouble(),
-    );
     print(ez['data'][0]['user_login']);
     timerC = 0;
+
     if (stream['data'].toString() == '[]') {
       print('1');
       return Scaffold(
@@ -189,7 +195,16 @@ class DashboardState extends State<Dashboard> {
             width: MediaQuery.of(context).size.width,
             decoration: BoxDecoration(color: Colors.black),
             child: ListView(children: [
-              adContainer,
+              if (_bannerAd != null)
+                AnimatedContainer(
+                  width: _bannerAd != null
+                      ? _bannerAd!.size.width.toDouble()
+                      : double.infinity,
+                  height:
+                      _bannerAd != null ? _bannerAd!.size.height.toDouble() : 0,
+                  duration: Duration(seconds: 2),
+                  child: AdWidget(ad: _bannerAd!),
+                ),
               Container(
                   padding: EdgeInsets.all(16),
                   child: Column(
@@ -287,31 +302,6 @@ class DashboardState extends State<Dashboard> {
                 ],
               ),
               Padding(padding: EdgeInsets.all(10)),
-              Container(
-                height: MediaQuery.of(context).size.height * 0.35,
-                width: MediaQuery.of(context).size.width * 0.95,
-                child: InAppWebView(
-                  initialUrlRequest: URLRequest(
-                    url: Uri.parse(
-                      ('https://nightdev.com/hosted/obschat?theme=bttv_dark&channel=${bz['data'][0]['login']}&fade=false&bot_activity=true&prevent_clipping=false'),
-                    ),
-                  ),
-                  androidOnPermissionRequest:
-                      (controller, origin, resources) async {
-                    return PermissionRequestResponse(
-                        resources: resources,
-                        action: PermissionRequestResponseAction.GRANT);
-                  },
-                ),
-              ),
-              /*Container(
-                margin: EdgeInsets.symmetric(vertical: 20.0),
-                child: AdmobBanner(
-                  adUnitId: getBannerAdUnitId(),
-                  adSize: bannerSize,
-                  listener: (AdmobAdEvent event, Map<String, dynamic> args) {},
-                ),
-              ),*/
               Padding(padding: EdgeInsets.all(10)),
               Container(
                 height: MediaQuery.of(context).size.height * 0.5,
@@ -573,10 +563,7 @@ class DashboardState extends State<Dashboard> {
               IconButton(
                 icon: const Icon(Icons.home),
                 tooltip: 'Back Home',
-                onPressed: () {
-                  timerC = 1;
-                  Navigator.pushNamed(context, '/home');
-                },
+                onPressed: () {},
               ),
             ],
             automaticallyImplyLeading: false,
@@ -593,24 +580,44 @@ class DashboardState extends State<Dashboard> {
               width: MediaQuery.of(context).size.width,
               decoration: BoxDecoration(color: Colors.black),
               child: ListView(children: [
-                adContainer,
-                Container(
-                  height: MediaQuery.of(context).size.height * 0.25,
-                  width: MediaQuery.of(context).size.width * 0.95,
-                  child: InAppWebView(
-                    initialUrlRequest: URLRequest(
-                      url: Uri.parse(
-                        ("https://player.twitch.tv/?channel=${ez['data'][0]['user_login']}&parent=www.tisserak.fr"),
-                      ),
-                    ),
-                    androidOnPermissionRequest:
-                        (controller, origin, resources) async {
-                      return PermissionRequestResponse(
-                          resources: resources,
-                          action: PermissionRequestResponseAction.GRANT);
-                    },
+                if (_bannerAd != null)
+                  AnimatedContainer(
+                    width: _bannerAd != null
+                        ? _bannerAd!.size.width.toDouble()
+                        : double.infinity,
+                    height: _bannerAd != null
+                        ? _bannerAd!.size.height.toDouble()
+                        : 0,
+                    duration: Duration(seconds: 2),
+                    child: AdWidget(ad: _bannerAd!),
                   ),
-                ),
+                /*
+                Platform.isAndroid
+                    ? Container(
+                        height: MediaQuery.of(context).size.height * 0.35,
+                        width: MediaQuery.of(context).size.width * 0.95,
+                        child: TwitchPlayerIFrame(
+                          channel: '$namee',
+                          controller: tt,
+                          parent: 'twitch.tv',
+                          autoplay: true,
+                        )
+*/
+                /*InAppWebView(
+                  initialUrlRequest: URLRequest(
+                    url: Uri.parse(
+                      ('https://nightdev.com/hosted/obschat?theme=bttv_dark&channel=${bz['data'][0]['login']}&fade=false&bot_activity=true&prevent_clipping=false'),
+                    ),
+                  ),
+                  androidOnPermissionRequest:
+                      (controller, origin, resources) async {
+                    return PermissionRequestResponse(
+                        resources: resources,
+                        action: PermissionRequestResponseAction.GRANT);
+                  },
+                ),*/
+                /* )
+                    : Container(),*/
                 Container(
                     padding: EdgeInsets.fromLTRB(64, 16, 64, 16),
                     child: Column(
@@ -702,19 +709,23 @@ class DashboardState extends State<Dashboard> {
                 Container(
                   height: MediaQuery.of(context).size.height * 0.4,
                   width: MediaQuery.of(context).size.width * 0.95,
-                  child: InAppWebView(
-                    initialUrlRequest: URLRequest(
-                      url: Uri.parse(
-                        ('https://nightdev.com/hosted/obschat?theme=bttv_dark&channel=${bz['data'][0]['login']}&fade=false&bot_activity=true&prevent_clipping=false'),
-                      ),
-                    ),
-                    androidOnPermissionRequest:
-                        (controller, origin, resources) async {
-                      return PermissionRequestResponse(
-                          resources: resources,
-                          action: PermissionRequestResponseAction.GRANT);
-                    },
-                  ),
+                  child: Platform.isAndroid
+                      ? InAppWebView(
+                          initialUrlRequest: URLRequest(
+                            url: Uri.parse(
+                              ('https://nightdev.com/hosted/obschat?theme=bttv_dark&channel=${bz['data'][0]['login']}&fade=false&bot_activity=true&prevent_clipping=false'),
+                            ),
+                          ),
+                          androidOnPermissionRequest:
+                              (controller, origin, resources) async {
+                            return PermissionRequestResponse(
+                                resources: resources,
+                                action: PermissionRequestResponseAction.GRANT);
+                          },
+                        )
+                      : WebViewWidget(
+                          controller: controller,
+                        ),
                 ),
                 /*Container(
                   margin: EdgeInsets.symmetric(vertical: 20.0),
@@ -1004,7 +1015,17 @@ class DashboardState extends State<Dashboard> {
               width: MediaQuery.of(context).size.width,
               decoration: BoxDecoration(color: Colors.black),
               child: ListView(children: [
-                adContainer,
+                if (_bannerAd != null)
+                  AnimatedContainer(
+                    width: _bannerAd != null
+                        ? _bannerAd!.size.width.toDouble()
+                        : double.infinity,
+                    height: _bannerAd != null
+                        ? _bannerAd!.size.height.toDouble()
+                        : 0,
+                    duration: Duration(seconds: 2),
+                    child: AdWidget(ad: _bannerAd!),
+                  ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -1100,19 +1121,24 @@ class DashboardState extends State<Dashboard> {
                     Container(
                       height: MediaQuery.of(context).size.height * 0.35,
                       width: MediaQuery.of(context).size.width * 0.5,
-                      child: InAppWebView(
-                        initialUrlRequest: URLRequest(
-                          url: Uri.parse(
-                            ('https://nightdev.com/hosted/obschat?theme=bttv_dark&channel=${bz['data'][0]['login']}&fade=false&bot_activity=true&prevent_clipping=false'),
-                          ),
-                        ),
-                        androidOnPermissionRequest:
-                            (controller, origin, resources) async {
-                          return PermissionRequestResponse(
-                              resources: resources,
-                              action: PermissionRequestResponseAction.GRANT);
-                        },
-                      ),
+                      child: Platform.isAndroid
+                          ? InAppWebView(
+                              initialUrlRequest: URLRequest(
+                                url: Uri.parse(
+                                  ('https://nightdev.com/hosted/obschat?theme=bttv_dark&channel=${bz['data'][0]['login']}&fade=false&bot_activity=true&prevent_clipping=false'),
+                                ),
+                              ),
+                              androidOnPermissionRequest:
+                                  (controller, origin, resources) async {
+                                return PermissionRequestResponse(
+                                    resources: resources,
+                                    action:
+                                        PermissionRequestResponseAction.GRANT);
+                              },
+                            )
+                          : WebViewWidget(
+                              controller: controller,
+                            ),
                     ),
                   ]),
                 ),

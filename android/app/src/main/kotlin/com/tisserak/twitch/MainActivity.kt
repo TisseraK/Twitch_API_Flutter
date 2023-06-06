@@ -1,4 +1,4 @@
-package com.example.twitch
+package com.tisserak.twitch
 
 import io.flutter.embedding.android.FlutterActivity
 
