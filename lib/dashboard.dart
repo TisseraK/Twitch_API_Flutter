@@ -15,6 +15,7 @@ import 'adHelper.dart';
 import 'main.dart';
 import 'dart:convert';
 
+RewardedAd? _rewardedAd;
 int nfollower = follower['total'];
 int nsub = sub['total'];
 int timerC = 0;
@@ -44,9 +45,27 @@ WebViewController controller = WebViewController()
       'https://nightdev.com/hosted/obschat?theme=bttv_dark&channel=${bz['data'][0]['login']}&fade=false&bot_activity=true&prevent_clipping=false'));
 
 class DashboardState extends State<Dashboard> {
-  BannerAd? _bannerAd;
   @override
   void initState() {
+    RewardedAd.load(
+      adUnitId: AdHelper.rewardedAdUnitId,
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        // Called when an ad is successfully received.
+        onAdLoaded: (ad) {
+          print('---');
+          debugPrint('$ad loaded.');
+          // Keep a reference to the ad so you can show it later.
+          _rewardedAd = ad;
+        },
+        // Called when an ad request failed.
+        onAdFailedToLoad: (LoadAdError error) {
+          print('ERRRROOOO');
+          debugPrint('RewardedAd failed to load: $error');
+        },
+      ),
+    );
+
     nfollower = follower['total'];
     nsub = sub['total'];
     id = bz['data'][0]['id'].toString();
@@ -137,29 +156,6 @@ class DashboardState extends State<Dashboard> {
       });
     });
     super.initState();
-    BannerAd(
-      adUnitId: AdHelper.bannerAdUnitId,
-      request: AdRequest(),
-      size: AdSize.banner,
-      listener: BannerAdListener(
-        onAdLoaded: (ad) {
-          setState(() {
-            _bannerAd = ad as BannerAd;
-          });
-        },
-        onAdFailedToLoad: (ad, err) {
-          print('Failed to load a banner ad: ${err.message}');
-          ad.dispose();
-        },
-      ),
-    ).load();
-  }
-
-  void dispose() {
-    // TODO: Dispose a BannerAd object
-    _bannerAd?.dispose();
-
-    super.dispose();
   }
 
   @override
@@ -195,15 +191,15 @@ class DashboardState extends State<Dashboard> {
             width: MediaQuery.of(context).size.width,
             decoration: BoxDecoration(color: Colors.black),
             child: ListView(children: [
-              if (_bannerAd != null)
+              if (bannerAd != null)
                 AnimatedContainer(
-                  width: _bannerAd != null
-                      ? _bannerAd!.size.width.toDouble()
+                  width: bannerAd != null
+                      ? bannerAd!.size.width.toDouble()
                       : double.infinity,
                   height:
-                      _bannerAd != null ? _bannerAd!.size.height.toDouble() : 0,
+                      bannerAd != null ? bannerAd!.size.height.toDouble() : 0,
                   duration: Duration(seconds: 2),
-                  child: AdWidget(ad: _bannerAd!),
+                  child: AdWidget(ad: bannerAd!),
                 ),
               Container(
                   padding: EdgeInsets.all(16),
@@ -339,6 +335,10 @@ class DashboardState extends State<Dashboard> {
                             content: const Text('Stream Marker create'),
                           ));
                         }
+
+                        _rewardedAd!.show(
+                            onUserEarnedReward:
+                                (AdWithoutView ad, RewardItem rewardItem) {});
                       },
                       child: Container(
                           padding: EdgeInsets.all(10),
@@ -383,6 +383,10 @@ class DashboardState extends State<Dashboard> {
                             content: const Text('Clip Create'),
                           ));
                         }
+
+                        _rewardedAd!.show(
+                            onUserEarnedReward:
+                                (AdWithoutView ad, RewardItem rewardItem) {});
                       },
                       child: Container(
                           padding: EdgeInsets.all(10),
@@ -431,6 +435,10 @@ class DashboardState extends State<Dashboard> {
                             content: const Text('30 secondes ADS launch'),
                           ));
                         }
+
+                        _rewardedAd!.show(
+                            onUserEarnedReward:
+                                (AdWithoutView ad, RewardItem rewardItem) {});
                       },
                       child: Container(
                           padding: EdgeInsets.all(10),
@@ -479,6 +487,10 @@ class DashboardState extends State<Dashboard> {
                             content: const Text('60 secondes ADS launch'),
                           ));
                         }
+
+                        _rewardedAd!.show(
+                            onUserEarnedReward:
+                                (AdWithoutView ad, RewardItem rewardItem) {});
                       },
                       child: Container(
                           padding: EdgeInsets.all(10),
@@ -527,6 +539,10 @@ class DashboardState extends State<Dashboard> {
                             content: const Text('90 secondes ADS launch'),
                           ));
                         }
+
+                        _rewardedAd!.show(
+                            onUserEarnedReward:
+                                (AdWithoutView ad, RewardItem rewardItem) {});
                       },
                       child: Container(
                           padding: EdgeInsets.all(10),
@@ -580,16 +596,15 @@ class DashboardState extends State<Dashboard> {
               width: MediaQuery.of(context).size.width,
               decoration: BoxDecoration(color: Colors.black),
               child: ListView(children: [
-                if (_bannerAd != null)
+                if (bannerAd != null)
                   AnimatedContainer(
-                    width: _bannerAd != null
-                        ? _bannerAd!.size.width.toDouble()
+                    width: bannerAd != null
+                        ? bannerAd!.size.width.toDouble()
                         : double.infinity,
-                    height: _bannerAd != null
-                        ? _bannerAd!.size.height.toDouble()
-                        : 0,
+                    height:
+                        bannerAd != null ? bannerAd!.size.height.toDouble() : 0,
                     duration: Duration(seconds: 2),
-                    child: AdWidget(ad: _bannerAd!),
+                    child: AdWidget(ad: bannerAd!),
                   ),
                 /*
                 Platform.isAndroid
@@ -772,6 +787,10 @@ class DashboardState extends State<Dashboard> {
                               content: const Text('Stream Marker create'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),
@@ -817,6 +836,10 @@ class DashboardState extends State<Dashboard> {
                               content: const Text('Clip Create'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),
@@ -865,6 +888,10 @@ class DashboardState extends State<Dashboard> {
                               content: const Text('30 secondes ADS launch'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),
@@ -913,6 +940,10 @@ class DashboardState extends State<Dashboard> {
                               content: const Text('60 secondes ADS launch'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),
@@ -961,6 +992,10 @@ class DashboardState extends State<Dashboard> {
                               content: const Text('90 secondes ADS launch'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),
@@ -1015,16 +1050,15 @@ class DashboardState extends State<Dashboard> {
               width: MediaQuery.of(context).size.width,
               decoration: BoxDecoration(color: Colors.black),
               child: ListView(children: [
-                if (_bannerAd != null)
+                if (bannerAd != null)
                   AnimatedContainer(
-                    width: _bannerAd != null
-                        ? _bannerAd!.size.width.toDouble()
+                    width: bannerAd != null
+                        ? bannerAd!.size.width.toDouble()
                         : double.infinity,
-                    height: _bannerAd != null
-                        ? _bannerAd!.size.height.toDouble()
-                        : 0,
+                    height:
+                        bannerAd != null ? bannerAd!.size.height.toDouble() : 0,
                     duration: Duration(seconds: 2),
-                    child: AdWidget(ad: _bannerAd!),
+                    child: AdWidget(ad: bannerAd!),
                   ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -1186,6 +1220,10 @@ class DashboardState extends State<Dashboard> {
                               content: const Text('Stream Marker create'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),
@@ -1231,6 +1269,10 @@ class DashboardState extends State<Dashboard> {
                               content: const Text('Clip Create'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),
@@ -1279,6 +1321,10 @@ class DashboardState extends State<Dashboard> {
                               content: const Text('30 secondes ADS launch'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),
@@ -1327,6 +1373,10 @@ class DashboardState extends State<Dashboard> {
                               content: const Text('60 secondes ADS launch'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),
@@ -1375,6 +1425,10 @@ class DashboardState extends State<Dashboard> {
                               content: const Text('90 secondes ADS launch'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),

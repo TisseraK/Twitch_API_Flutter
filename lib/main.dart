@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'dart:io';
+import 'package:StreamDash/adHelper.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 
@@ -28,7 +29,6 @@ void main() async {
   // Initialize without device test ids.
   await MobileAds.instance.initialize();
   await Firebase.initializeApp();
-  //MobileAds.instance.updateRequestConfiguration(RequestConfiguration(   testDeviceIds: ['93b949006c67dd04029d0eb3272ccda4']));
 
   //Admob.initialize();
   if (Platform.isIOS) {
@@ -191,6 +191,20 @@ class _MyHomePageState extends State<MyHomePage> {
                         });
                     test = json.decode(test.body);
                     print(test.toString());
+                    await BannerAd(
+                      adUnitId: AdHelper.bannerAdUnitId,
+                      request: AdRequest(),
+                      size: AdSize.banner,
+                      listener: BannerAdListener(
+                        onAdLoaded: (ad) {
+                          bannerAd = ad as BannerAd;
+                        },
+                        onAdFailedToLoad: (ad, err) {
+                          print('Failed to load a banner ad: ${err.message}');
+                          ad.dispose();
+                        },
+                      ),
+                    ).load();
                     await getUserSignUp();
                     Navigator.pushNamed(context, '/home');
                   },
@@ -229,187 +243,100 @@ class TwitchState extends State<Twitch> {
 
   @override
   Widget build(BuildContext context) {
-    if (Platform.isIOS) {
-      WebViewController controller = WebViewController()
-        ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setBackgroundColor(const Color(0x00000000))
-        ..setNavigationDelegate(
-          NavigationDelegate(
-            onProgress: (int progress) {
-              // Update loading bar.
-            },
-            onPageStarted: (String url) {
-              print(url.toString());
-              setState(() async {
-                String urll = url.toString();
-                print('URL!!!! : ' + '$urll');
-                //Get the user token for use it in different get requete
-                if (urll.startsWith('https://tisserak.fr')) {
-                  bearerID = urll.substring(34, 64);
-                  print(bearerID);
-                  bz = await http.get(
-                      Uri.parse('https://api.twitch.tv/helix/users'),
-                      headers: {
-                        'Authorization': 'Bearer $bearerID',
-                        'Client-Id': '$clientID'
-                      });
-                  bz = json.decode(bz.body);
-                  namee = bz['data'][0]['login'].toString();
-                  print(bz.toString());
-                  id = bz['data'][0]['id'].toString();
-                  ez = await http.get(Uri.parse(
-                      //   'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
-                      'https://api.twitch.tv/helix/streams'), headers: {
+    return Scaffold(
+        body: Center(
+      // Center is a layout widget. It takes a single child and positions it
+      // in the middle of the parent.
+      child: InAppWebView(
+        initialUrlRequest: URLRequest(
+          url: Uri.parse(
+              ('https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=$clientID&redirect_uri=https://tisserak.fr&scope=channel%3Amanage%3Apolls+channel%3Aread%3Apolls+channel%3Aread%3Asubscriptions+channel%3Aedit%3Acommercial+clips%3Aedit+channel%3Amanage%3Abroadcast+moderator%3Amanage%3Achat_settings')),
+        ),
+        androidOnPermissionRequest: (controller, origin, resources) async {
+          return PermissionRequestResponse(
+              resources: resources,
+              action: PermissionRequestResponseAction.GRANT);
+        },
+        onLoadStart: (controller, url) {
+          print(url.toString());
+          setState(() async {
+            String urll = url.toString();
+            print('URL!!!! : ' + '$urll');
+            //Get the user token for use it in different get requete
+            if (urll.startsWith('https://tisserak.fr')) {
+              bearerID = urll.substring(34, 64);
+              print(bearerID);
+              bz = await http.get(
+                  Uri.parse('https://api.twitch.tv/helix/users'),
+                  headers: {
+                    'Authorization': 'Bearer $bearerID',
+                    'Client-Id': '$clientID'
+                  });
+              bz = json.decode(bz.body);
+              print(bz.toString());
+              id = bz['data'][0]['id'].toString();
+              ez = await http.get(Uri.parse(
+                  //   'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
+                  'https://api.twitch.tv/helix/streams'), headers: {
+                'Authorization': 'Bearer $bearerID',
+                'Client-Id': '$clientID',
+              });
+
+              ez = json.decode(ez.body);
+              print(ez.toString());
+              follower = await http.get(Uri.parse(
+                      //'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
+                      'https://api.twitch.tv/helix/users/follows?to_id=${bz['data'][0]['id']}'),
+                  headers: {
                     'Authorization': 'Bearer $bearerID',
                     'Client-Id': '$clientID',
                   });
 
-                  ez = json.decode(ez.body);
-                  print(ez.toString());
-                  follower = await http.get(Uri.parse(
-                          //'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
-                          'https://api.twitch.tv/helix/users/follows?to_id=${bz['data'][0]['id']}'),
-                      headers: {
-                        'Authorization': 'Bearer $bearerID',
-                        'Client-Id': '$clientID',
-                      });
+              follower = json.decode(follower.body);
+              print(follower.toString());
+              sub = await http.get(Uri.parse(
+                      //'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
+                      'https://api.twitch.tv/helix/subscriptions?broadcaster_id=${bz['data'][0]['id']}&first=1'),
+                  headers: {
+                    'Authorization': 'Bearer $bearerID',
+                    'Client-Id': '$clientID',
+                  });
 
-                  follower = json.decode(follower.body);
-                  print(follower.toString());
-                  sub = await http.get(Uri.parse(
-                          //'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
-                          'https://api.twitch.tv/helix/subscriptions?broadcaster_id=${bz['data'][0]['id']}&first=1'),
-                      headers: {
-                        'Authorization': 'Bearer $bearerID',
-                        'Client-Id': '$clientID',
-                      });
-
-                  sub = json.decode(sub.body);
-                  print(sub.toString());
-                  test = await http.get(
-                      Uri.parse(
-                          'https://api.twitch.tv/helix/eventsub/subscriptions'),
-                      headers: {
-                        'Authorization': 'Bearer $bearerID',
-                        'Client-Id': '$clientID',
-                      });
-                  test = json.decode(test.body);
-                  print(test.toString());
-                  print(test.toString());
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SecondPage()),
-                  );
-                }
-              });
-            },
-            onPageFinished: (String url) {},
-            onWebResourceError: (WebResourceError error) {},
-            onNavigationRequest: (NavigationRequest request) {
-              if (request.url.startsWith('https://www.youtube.com/')) {
-                return NavigationDecision.prevent;
-              }
-              return NavigationDecision.navigate;
-            },
-          ),
-        )
-        ..loadRequest(Uri.parse(
-            'https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=$clientID&redirect_uri=https://tisserak.fr&scope=channel%3Amanage%3Apolls+channel%3Aread%3Apolls+channel%3Aread%3Asubscriptions+channel%3Aedit%3Acommercial+clips%3Aedit+channel%3Amanage%3Abroadcast+moderator%3Amanage%3Achat_settings'));
-      if (controller.platform is AndroidWebViewController) {
-        AndroidWebViewController.enableDebugging(true);
-        (controller.platform as AndroidWebViewController)
-            .setMediaPlaybackRequiresUserGesture(false);
-      }
-      return Scaffold(
-          body: Center(
-        child: WebViewWidget(
-          controller: controller,
-        ),
-      ));
-    } else {
-      return Scaffold(
-          body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: InAppWebView(
-          initialUrlRequest: URLRequest(
-            url: Uri.parse(
-                ('https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=$clientID&redirect_uri=https://tisserak.fr&scope=channel%3Amanage%3Apolls+channel%3Aread%3Apolls+channel%3Aread%3Asubscriptions+channel%3Aedit%3Acommercial+clips%3Aedit+channel%3Amanage%3Abroadcast+moderator%3Amanage%3Achat_settings')),
-          ),
-          androidOnPermissionRequest: (controller, origin, resources) async {
-            return PermissionRequestResponse(
-                resources: resources,
-                action: PermissionRequestResponseAction.GRANT);
-          },
-          onLoadStart: (controller, url) {
-            print(url.toString());
-            setState(() async {
-              String urll = url.toString();
-              print('URL!!!! : ' + '$urll');
-              //Get the user token for use it in different get requete
-              if (urll.startsWith('https://tisserak.fr')) {
-                bearerID = urll.substring(34, 64);
-                print(bearerID);
-                bz = await http.get(
-                    Uri.parse('https://api.twitch.tv/helix/users'),
-                    headers: {
-                      'Authorization': 'Bearer $bearerID',
-                      'Client-Id': '$clientID'
-                    });
-                bz = json.decode(bz.body);
-                print(bz.toString());
-                id = bz['data'][0]['id'].toString();
-                ez = await http.get(Uri.parse(
-                    //   'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
-                    'https://api.twitch.tv/helix/streams'), headers: {
-                  'Authorization': 'Bearer $bearerID',
-                  'Client-Id': '$clientID',
-                });
-
-                ez = json.decode(ez.body);
-                print(ez.toString());
-                follower = await http.get(Uri.parse(
-                        //'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
-                        'https://api.twitch.tv/helix/users/follows?to_id=${bz['data'][0]['id']}'),
-                    headers: {
-                      'Authorization': 'Bearer $bearerID',
-                      'Client-Id': '$clientID',
-                    });
-
-                follower = json.decode(follower.body);
-                print(follower.toString());
-                sub = await http.get(Uri.parse(
-                        //'https://api.twitch.tv/helix/streams?user_id=${bz['data'][0]['id']}'),
-                        'https://api.twitch.tv/helix/subscriptions?broadcaster_id=${bz['data'][0]['id']}&first=1'),
-                    headers: {
-                      'Authorization': 'Bearer $bearerID',
-                      'Client-Id': '$clientID',
-                    });
-
-                sub = json.decode(sub.body);
-                print(sub.toString());
-                test = await http.get(
-                    Uri.parse(
-                        'https://api.twitch.tv/helix/eventsub/subscriptions'),
-                    headers: {
-                      'Authorization': 'Bearer $bearerID',
-                      'Client-Id': '$clientID',
-                    });
-                test = json.decode(test.body);
-                print(test.toString());
-                print(test.toString());
-
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SecondPage()),
-                );
-              }
-            });
-          },
-        ),
-      ));
-    }
+              sub = json.decode(sub.body);
+              print(sub.toString());
+              test = await http.get(
+                  Uri.parse(
+                      'https://api.twitch.tv/helix/eventsub/subscriptions'),
+                  headers: {
+                    'Authorization': 'Bearer $bearerID',
+                    'Client-Id': '$clientID',
+                  });
+              test = json.decode(test.body);
+              print(test.toString());
+              print(test.toString());
+              await BannerAd(
+                adUnitId: AdHelper.bannerAdUnitId,
+                request: AdRequest(),
+                size: AdSize.banner,
+                listener: BannerAdListener(
+                  onAdLoaded: (ad) {
+                    bannerAd = ad as BannerAd;
+                  },
+                  onAdFailedToLoad: (ad, err) {
+                    print('Failed to load a banner ad: ${err.message}');
+                    ad.dispose();
+                  },
+                ),
+              ).load();
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SecondPage()),
+              );
+            }
+          });
+        },
+      ),
+    ));
   }
 }
 

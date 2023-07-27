@@ -25,11 +25,13 @@ class StreamPad extends StatefulWidget {
   State<StreamPad> createState() => StreamPadState();
 }
 
+BannerAd? _bannerAd;
+
+RewardedAd? _rewardedAd;
+
 class StreamPadState extends State<StreamPad> {
   ///AdmobBannerSize bannerSize;
   //AdmobInterstitial interstitialAd;
-
-  BannerAd? _bannerAd;
 
   // TODO: Implement _loadRewardedAd()
 
@@ -39,6 +41,25 @@ class StreamPadState extends State<StreamPad> {
     nsub = sub['total'];
     id = bz['data'][0]['id'].toString();
     print(id);
+    RewardedAd.load(
+      adUnitId: AdHelper.rewardedAdUnitId,
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        // Called when an ad is successfully received.
+        onAdLoaded: (ad) {
+          print('---');
+          debugPrint('$ad loaded.');
+          // Keep a reference to the ad so you can show it later.
+          _rewardedAd = ad;
+        },
+        // Called when an ad request failed.
+        onAdFailedToLoad: (LoadAdError error) {
+          print('ERRRROOOO');
+          debugPrint('RewardedAd failed to load: $error');
+        },
+      ),
+    );
+
     Timer mytimer = Timer.periodic(Duration(seconds: 5), (timer) async {
       stream = await http
           .get(Uri.parse('https://api.twitch.tv/helix/streams?user_id=$id'),
@@ -281,15 +302,15 @@ class StreamPadState extends State<StreamPad> {
                 ],
               ),
               Padding(padding: EdgeInsets.all(10)),
-              if (_bannerAd != null)
+              if (bannerAd != null)
                 AnimatedContainer(
-                  width: _bannerAd != null
-                      ? _bannerAd!.size.width.toDouble()
+                  width: bannerAd != null
+                      ? bannerAd!.size.width.toDouble()
                       : double.infinity,
                   height:
-                      _bannerAd != null ? _bannerAd!.size.height.toDouble() : 0,
+                      bannerAd != null ? bannerAd!.size.height.toDouble() : 0,
                   duration: Duration(seconds: 2),
-                  child: AdWidget(ad: _bannerAd!),
+                  child: AdWidget(ad: bannerAd!),
                 ),
               Padding(padding: EdgeInsets.all(10)),
               Container(
@@ -328,6 +349,11 @@ class StreamPadState extends State<StreamPad> {
                             content: const Text('Stream Marker create'),
                           ));
                         }
+                        //HERE
+
+                        _rewardedAd!.show(
+                            onUserEarnedReward:
+                                (AdWithoutView ad, RewardItem rewardItem) {});
                       },
                       child: Container(
                           padding: EdgeInsets.all(10),
@@ -372,6 +398,9 @@ class StreamPadState extends State<StreamPad> {
                             content: const Text('Clip Create'),
                           ));
                         }
+                        await _rewardedAd!.show(
+                            onUserEarnedReward:
+                                (AdWithoutView ad, RewardItem rewardItem) {});
                       },
                       child: Container(
                           padding: EdgeInsets.all(10),
@@ -420,6 +449,9 @@ class StreamPadState extends State<StreamPad> {
                             content: const Text('30 secondes ADS launch'),
                           ));
                         }
+                        await _rewardedAd!.show(
+                            onUserEarnedReward:
+                                (AdWithoutView ad, RewardItem rewardItem) {});
                       },
                       child: Container(
                           padding: EdgeInsets.all(10),
@@ -468,6 +500,9 @@ class StreamPadState extends State<StreamPad> {
                             content: const Text('60 secondes ADS launch'),
                           ));
                         }
+                        await _rewardedAd!.show(
+                            onUserEarnedReward:
+                                (AdWithoutView ad, RewardItem rewardItem) {});
                       },
                       child: Container(
                           padding: EdgeInsets.all(10),
@@ -516,6 +551,9 @@ class StreamPadState extends State<StreamPad> {
                             content: const Text('90 secondes ADS launch'),
                           ));
                         }
+                        await _rewardedAd!.show(
+                            onUserEarnedReward:
+                                (AdWithoutView ad, RewardItem rewardItem) {});
                       },
                       child: Container(
                           padding: EdgeInsets.all(10),
@@ -672,16 +710,15 @@ class StreamPadState extends State<StreamPad> {
                   ],
                 ),
                 Padding(padding: EdgeInsets.all(10)),
-                if (_bannerAd != null)
+                if (bannerAd != null)
                   AnimatedContainer(
-                    width: _bannerAd != null
-                        ? _bannerAd!.size.width.toDouble()
+                    width: bannerAd != null
+                        ? bannerAd!.size.width.toDouble()
                         : double.infinity,
-                    height: _bannerAd != null
-                        ? _bannerAd!.size.height.toDouble()
-                        : 0,
+                    height:
+                        bannerAd != null ? bannerAd!.size.height.toDouble() : 0,
                     duration: Duration(seconds: 2),
-                    child: AdWidget(ad: _bannerAd!),
+                    child: AdWidget(ad: bannerAd!),
                   ),
                 Padding(padding: EdgeInsets.all(10)),
                 Container(
@@ -720,6 +757,10 @@ class StreamPadState extends State<StreamPad> {
                               content: const Text('Stream Marker create'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),
@@ -765,6 +806,10 @@ class StreamPadState extends State<StreamPad> {
                               content: const Text('Clip Create'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),
@@ -813,6 +858,10 @@ class StreamPadState extends State<StreamPad> {
                               content: const Text('30 secondes ADS launch'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),
@@ -861,6 +910,10 @@ class StreamPadState extends State<StreamPad> {
                               content: const Text('60 secondes ADS launch'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),
@@ -909,6 +962,10 @@ class StreamPadState extends State<StreamPad> {
                               content: const Text('90 secondes ADS launch'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),
@@ -1109,6 +1166,10 @@ class StreamPadState extends State<StreamPad> {
                               content: const Text('Stream Marker create'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),
@@ -1154,6 +1215,10 @@ class StreamPadState extends State<StreamPad> {
                               content: const Text('Clip Create'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),
@@ -1202,6 +1267,10 @@ class StreamPadState extends State<StreamPad> {
                               content: const Text('30 secondes ADS launch'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),
@@ -1250,6 +1319,10 @@ class StreamPadState extends State<StreamPad> {
                               content: const Text('60 secondes ADS launch'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),
@@ -1298,6 +1371,10 @@ class StreamPadState extends State<StreamPad> {
                               content: const Text('90 secondes ADS launch'),
                             ));
                           }
+
+                          _rewardedAd!.show(
+                              onUserEarnedReward:
+                                  (AdWithoutView ad, RewardItem rewardItem) {});
                         },
                         child: Container(
                             padding: EdgeInsets.all(10),

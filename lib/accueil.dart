@@ -80,7 +80,7 @@ class SecondPageState extends State<SecondPage> {
                   children: [
                     Padding(padding: EdgeInsets.all(25)),
                     Text(
-                      'Bienvenue ' + bz['data'][0]['display_name'].toString(),
+                      'Welcome ' + bz['data'][0]['display_name'].toString(),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           fontSize: MediaQuery.of(context).size.height * 0.03,
@@ -187,22 +187,22 @@ class SecondPageState extends State<SecondPage> {
                           ],
                         )),
                     Padding(padding: EdgeInsets.all(5)),
-                    if (_bannerAd != null)
+                    if (bannerAd != null)
                       AnimatedContainer(
-                        width: _bannerAd != null
-                            ? _bannerAd!.size.width.toDouble()
+                        width: bannerAd != null
+                            ? bannerAd!.size.width.toDouble()
                             : double.infinity,
-                        height: _bannerAd != null
-                            ? _bannerAd!.size.height.toDouble()
+                        height: bannerAd != null
+                            ? bannerAd!.size.height.toDouble()
                             : 0,
                         duration: Duration(seconds: 2),
-                        child: AdWidget(ad: _bannerAd!),
+                        child: AdWidget(ad: bannerAd!),
                       ),
                     Padding(padding: EdgeInsets.all(5)),
                     Container(
                       width: MediaQuery.of(context).size.width * 0.9,
                       child: Text(
-                        'Découvre nos outils disponible !',
+                        'Find new tools for twitch !',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             color: Colors.white,
@@ -215,7 +215,7 @@ class SecondPageState extends State<SecondPage> {
                     Container(
                       width: MediaQuery.of(context).size.width * 0.9,
                       child: Text(
-                        'Un outil te permettant de gérer entierement ton stream !',
+                        'A tool allowing you to fully manage your stream !',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             color: Colors.white,
@@ -259,7 +259,7 @@ class SecondPageState extends State<SecondPage> {
                     Container(
                       width: MediaQuery.of(context).size.width * 0.9,
                       child: Text(
-                        'Un outil minimaliste pour gérer ton stream !',
+                        'A minimalist tool to manage your stream!',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             color: Colors.white,
@@ -352,7 +352,7 @@ class SecondPageState extends State<SecondPage> {
                     Container(
                       width: MediaQuery.of(context).size.width * 0.9,
                       child: Text(
-                        'Augmente ton nombre de vus YouTube avec la communauté !',
+                        'Increase your YouTube views with the community!',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             color: Colors.white,

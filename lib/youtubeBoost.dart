@@ -33,26 +33,9 @@ class Launcher extends StatefulWidget {
 }
 
 class LauncherState extends State<Launcher> {
-  BannerAd? _bannerAd;
   @override
   void initState() {
     super.initState();
-    BannerAd(
-      adUnitId: AdHelper.bannerAdUnitId,
-      request: AdRequest(),
-      size: AdSize.banner,
-      listener: BannerAdListener(
-        onAdLoaded: (ad) {
-          setState(() {
-            _bannerAd = ad as BannerAd;
-          });
-        },
-        onAdFailedToLoad: (ad, err) {
-          print('Failed to load a banner ad: ${err.message}');
-          ad.dispose();
-        },
-      ),
-    ).load();
   }
 
   final _controller = YoutubePlayerController(
@@ -68,7 +51,7 @@ class LauncherState extends State<Launcher> {
 
   @override
   void dispose() {
-    _bannerAd?.dispose();
+    bannerAd?.dispose();
     _timer.cancel();
     super.dispose();
   }
@@ -105,15 +88,14 @@ class LauncherState extends State<Launcher> {
                 ),
               ),
             ),
-            if (_bannerAd != null)
+            if (bannerAd != null)
               AnimatedContainer(
-                width: _bannerAd != null
-                    ? _bannerAd!.size.width.toDouble()
+                width: bannerAd != null
+                    ? bannerAd!.size.width.toDouble()
                     : double.infinity,
-                height:
-                    _bannerAd != null ? _bannerAd!.size.height.toDouble() : 0,
+                height: bannerAd != null ? bannerAd!.size.height.toDouble() : 0,
                 duration: Duration(seconds: 2),
-                child: AdWidget(ad: _bannerAd!),
+                child: AdWidget(ad: bannerAd!),
               ),
             SizedBox(
               height: 200,
@@ -141,7 +123,7 @@ class LauncherState extends State<Launcher> {
                       }
                     }
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text('Vous avez gagner 100 Points !'),
+                      content: Text('You win 100 Points !'),
                     ));
                     Navigator.pushNamed(context, '/YoutubeBoost');
                   }),
@@ -263,7 +245,7 @@ class LauncherState extends State<Launcher> {
             print(videoID.length);
             if (iiii < numberCredit * 100 || videoID.length != 11) {
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text('Erreur de crédit ou lien incorrect'),
+                content: Text('Error'),
               ));
               Navigator.pop(context);
             } else {
@@ -286,7 +268,7 @@ class LauncherState extends State<Launcher> {
                 'point': iiii - (numberCredit * 1000),
               });
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text('Vidéo ajouté'),
+                content: Text('Vidéo been add'),
               ));
               Navigator.pop(context);
             }
